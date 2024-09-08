@@ -11,8 +11,8 @@ func VerifyVersion() {
 
 }
 
-func GetMostRecentVersion() (string, error) {
-	didDownload, err := downloadLinkAsFile("temp_version.json", "https://raw.githubusercontent.com/beters02/Strafe-Desktop/main/strafedesktop/version.json")
+func GetMostRecentLauncherVersion() (string, error) {
+	didDownload, err := downloadLinkAsFile("temp_version.json", "https://github.com/beters02/UnityMonopolyLauncher/blob/main/src/version.go")
 	if !didDownload {
 		return "", err
 	}
@@ -27,12 +27,37 @@ func GetMostRecentVersion() (string, error) {
 	return a, nil
 }
 
-func GetLocalVersion() (string, error) {
+func GetMostRecentGameVersion() (string, error) {
+	didDownload, err := downloadLinkAsFile("temp_version.json", "https://github.com/beters02/UnityMonopolyLauncher/blob/main/src/version.go")
+	if !didDownload {
+		return "", err
+	}
+
+	table, err := jsonFileToTable("temp_version.json")
+	if err != nil {
+		return "", err
+	}
+
+	os.Remove("temp_version.json")
+	a := table["Version"].(string)
+	return a, nil
+}
+
+func GetLocalLauncherVersion() (string, error) {
 	table, err := jsonFileToTable("version.json")
 	if err != nil {
 		return "", err
 	}
-	a := table["Version"].(string)
+	a := table["Launcher_Version"].(string)
+	return a, nil
+}
+
+func GetLocalGameVersion() (string, error) {
+	table, err := jsonFileToTable("version.json")
+	if err != nil {
+		return "", err
+	}
+	a := table["Game_Version"].(string)
 	return a, nil
 }
 
