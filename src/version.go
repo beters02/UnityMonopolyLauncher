@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -9,10 +10,71 @@ import (
 
 func VerifyVersion() {
 
+	localLauncherVerison, err := GetLocalLauncherVersion()
+
+	if err != nil {
+		fmt.Print("Could not find launcher version. " + err.Error())
+	} else {
+		recentLauncherVersion, rerr := GetMostRecentLauncherVersion()
+		if rerr == nil {
+			fmt.Print("Could not get recent launcher version.")
+		} else {
+			if localLauncherVerison != recentLauncherVersion {
+				DownloadRecentLauncher()
+			}
+		}
+	}
+
+	localGameVersion, err := GetLocalGameVersion()
+
+	if err != nil {
+		fmt.Print("Could not find local game version. " + err.Error())
+		return
+	}
+
+	recentGameVersion, err := GetMostRecentGameVersion()
+
+	if err != nil {
+		fmt.Print("Could not find recent game version. " + err.Error())
+		return
+	}
+
+	if localGameVersion != recentGameVersion {
+		DownloadRecentGame()
+	}
+
+}
+
+func DownloadRecentLauncher() {
+
+}
+
+func DownloadRecentGame() {
+
+	didDownload, err := downloadLinkAsFile("MonoBleedingEdge", "https://github.com/beters02/GrandCasinopoly/blob/main/MonoBleedingEdge")
+	if !didDownload {
+		return
+	}
+
+	didDownload, err = downloadLinkAsFile("temp_version.json", "https://github.com/beters02/GrandCasinopoly/blob/main/Monopoly Work Branch_Data")
+	if !didDownload {
+		return
+	}
+
+	didDownload, err = downloadLinkAsFile("temp_version.json", "https://github.com/beters02/GrandCasinopoly/blob/main/Monopoly Work Branch.exe")
+	if !didDownload {
+		return
+	}
+
+	if err != nil {
+		fmt.Print("Download game error " + err.Error())
+	} else {
+		fmt.Print(didDownload)
+	}
 }
 
 func GetMostRecentLauncherVersion() (string, error) {
-	didDownload, err := downloadLinkAsFile("temp_version.json", "https://github.com/beters02/UnityMonopolyLauncher/blob/main/src/version.go")
+	didDownload, err := downloadLinkAsFile("temp_version.json", "https://github.com/beters02/UnityMonopolyLauncher/blob/main/src/version.json")
 	if !didDownload {
 		return "", err
 	}
@@ -23,12 +85,13 @@ func GetMostRecentLauncherVersion() (string, error) {
 	}
 
 	os.Remove("temp_version.json")
-	a := table["Version"].(string)
+	a := table["Launcher_Version"].(string)
 	return a, nil
 }
 
 func GetMostRecentGameVersion() (string, error) {
-	didDownload, err := downloadLinkAsFile("temp_version.json", "https://github.com/beters02/UnityMonopolyLauncher/blob/main/src/version.go")
+
+	didDownload, err := downloadLinkAsFile("temp_version.json", "https://github.com/beters02/GrandCasinopoly/blob/main/version.json")
 	if !didDownload {
 		return "", err
 	}
@@ -84,6 +147,7 @@ func jsonFileToTable(where string) (map[string]interface{}, error) {
 }
 
 func downloadLinkAsFile(where string, link string) (bool, error) {
+
 	out, err := os.Create(where)
 	if err != nil {
 		return false, err
